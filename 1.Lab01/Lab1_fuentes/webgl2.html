@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset="utf-8">
+  <title> Canvas en html5 </title>
+  	 <style type="text/css">
+	 canvas {border: 2px dotted yellow;}
+	 </style>
+	 
+	 <script>
+	 	// Variable del contexto. En la mayor parte de los manuales se
+	 	// llama gl
+		var gl = null;
+		
+		function getGLContext(){
+
+			// El objetivo de esta función es obtener e identificar el primer contexto
+			// admitido por el canvas. Luego lo imprime en la consola
+			
+			// Obtengo la referencia con el canvas
+			var canvas = document.getElementById("ejemplo");
+			if (canvas == null){
+				alert("No hay Canvas en esta página");
+				return;
+			}
+			
+			// Vector con los tipos de contexto existentes	
+			var names = ["webgl", "webgl2","2d"];
+	
+			// Buscamos el primer contexto que admita el canvas	
+			for (var i = 0; i < names.length; ++i) {
+
+			      gl = canvas.getContext(names[i]);
+			      
+		    	      if (gl) {
+		                  // Vamos a imprimir por la consola el contexto conseguido
+		                  //Para ello en el navegador pulsa ctrl+shift+J
+		                  // y selecciona la pestaña de console
+		        
+							console.log(names[i]);
+		    			break;}
+           		 }
+					// Si el canvas no admitiera ningun contexto
+					if (gl == null){
+						alert("WebGL no se puede utilizar");
+					}
+					else{
+						alert("Enhorabuena! El navegador soporta WebGL");
+					}
+		}
+	 </script>
+
+</head>
+<body onLoad="getGLContext()">
+  <canvas id="ejemplo" width="400" height="400">
+	
+  </canvas>
+</body>
+</html>

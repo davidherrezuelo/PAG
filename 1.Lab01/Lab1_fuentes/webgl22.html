@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset=”utf-8”>
+  <title> Canvas en html5 </title>
+  	 <style type="text/css">
+	 canvas {border: 2px dotted blue;}
+	 </style>
+	 
+  <script>
+      var gl = null;
+      
+      function getGLContext(){
+	var canvas = document.getElementById("ejemplo");
+	   if(canvas == null){
+	     alert("No hay un canvas en la página");
+	     return;
+	   }
+	//LOS NOMBRES DE LOS CONTEXTOS
+	var names = ["webgl", "webgl2","2d"];
+	for (var i = 0; i<names.length; i++){
+	  //con try y catch
+	  try{
+	   gl = canvas.getContext(names[i]);
+	  }
+	  catch(e){}
+	  if(gl) break;
+	  
+	}//for
+	
+	if (gl == null){
+	   alert(" WebGl no se puede utilizar");
+	}
+	else{
+	   alert("Tenemos un contexto");
+	
+	}
+      }
+      
+  </script>
+
+</head>
+<body onLoad="getGLContext()">
+  <canvas id="ejemplo" width="400" height="400">
+	
+  </canvas>
+</body>
+</html>
