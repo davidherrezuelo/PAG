@@ -1,4 +1,4 @@
-			// Funcionalidad Javascript 
+// Funcionalidad Javascript 
 // Funciones generales de webgl
 /** *************************************
    VARIABLES GLOBALES
@@ -10,30 +10,60 @@ var vertexShader,fragmentShader, glProgram;
 
 
 var triangles=[
-          //Triangulo  
-          -0.1, 0.5, 0.0,	// A
-          -0.6, -0.5, 0.0,	// B
-          -0.1, -0.5, 0.0,	// C
-		  0.1, 0.5, 0.0,	// D
-          0.1, -0.5, 0.0,	// E
-          0.6, -0.5, 0.0,	// F
+	//Triangulo  
+	-0.1, 0.5, 0.0,	// A
+	-0.6, -0.5, 0.0,	// B
+	-0.1, -0.5, 0.0,	// C
+	0.1, 0.5, 0.0,	// D
+	0.1, -0.5, 0.0,	// E
+	0.6, -0.5, 0.0,	// F
 ];
 
+
+var bordes=[
+	-0.1, 0.5, 0.0,		// A
+	-0.6, -0.5, 0.0,	// B
+	-0.6, -0.5, 0.0,	// B
+	-0.1, -0.5, 0.0,	// C
+	-0.1, -0.5, 0.0,	// C
+	-0.1, 0.5, 0.0,		// A
+
+	0.1, 0.5, 0.0,		// D
+	0.1, -0.5, 0.0,		// E
+	0.1, -0.5, 0.0,		// E
+	0.6, -0.5, 0.0,		// F
+	0.6, -0.5, 0.0,		// F
+	0.1, 0.5, 0.0,		// D
+];
+
+
 var coloresRelleno=[
-		0.90, 0.60, 0.10,
-		0.90, 0.60, 0.10,
-		0.90, 0.60, 0.10,
-		0.90, 0.60, 0.10,
-		0.90, 0.60, 0.10,
-		0.90, 0.60, 0.10,
+  0.90, 0.60, 0.10,
+  0.90, 0.60, 0.10,
+  0.90, 0.60, 0.10,
+  0.90, 0.60, 0.10,
+  0.90, 0.60, 0.10,
+  0.90, 0.60, 0.10,
 ];
 
 var coloresBorde=[
-		0.45, 0.30, 0.05,
-		0.45, 0.30, 0.05,
-		0.45, 0.30, 0.05,
+  0.45, 0.30, 0.05,
+  0.45, 0.30, 0.05,
+  0.45, 0.30, 0.05,
+  0.45, 0.30, 0.05,
+  0.45, 0.30, 0.05,
+  0.45, 0.30, 0.05,
+  0.45, 0.30, 0.05,
+  0.45, 0.30, 0.05,
+  0.45, 0.30, 0.05,
+  0.45, 0.30, 0.05,
+  0.45, 0.30, 0.05,
+  0.45, 0.30, 0.05,
 ];
 
+
+//Bufferes
+var vertexbuf, colorBuf;
 
 /****************/
 /** FUNCIONES **/
@@ -42,65 +72,75 @@ var coloresBorde=[
 	initBuffers: iniciar los Bufferes
 	En esta función crearemos el buffer de vértices y el buffer de índices
  ****************************************************/
-function initBuffers(triangles){
-	//Buffer de vertices
-	triangles.bufferVertices=gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, triangles.bufferVertices);
-	//gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(triangles.vertices),gl.STATIC_DRAW);
+function initBuffers(){
+	//Buffer Vertices Triangulo
+	triangles.vertexBuf=gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, triangles.vertexBuf);
 	gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(triangles),gl.STATIC_DRAW);
+	
+		//Buffer Colores
+	triangles.colorBufRelleno=gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, triangles.colorBufRelleno);
+	gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(coloresRelleno),gl.STATIC_DRAW);
+	
+		//Buffer Vertices del Borde
+	triangles.vertexBufBorde=gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, triangles.vertexBufBorde);
+	gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(bordes),gl.STATIC_DRAW);	
 
-	//Buffer de colores
-	triangles.bufferColoresRelleno=gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, triangles.bufferColoresRelleno);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(coloresRelleno), gl.STATIC_DRAW);
-
-	triangles.bufferColoresBorde=gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, triangles.bufferColoresBorde);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(coloresBorde), gl.STATIC_DRAW);
-
+		//Bordes
+	triangles.colorBufBorde=gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, triangles.colorBufBorde);
+	gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(coloresBorde),gl.STATIC_DRAW);
+	
 }
 
 /** *************************************************
-	draw (triangles): Enlazar los bufferes a los vértices declarados
-	   
+	draw (): Enlazar los bufferes a los vértices declarados
+	
  ****************************************************/
-function draw(triangles){
+function draw(){
+
+	/**
+	* POSICION
+	*/
 
 	glProgram.vertexPositionAttribute= gl.getAttribLocation(glProgram, "aVertexPosition");
-	
-	/*
-		TRIANGULO
-	*/
-	// Buffer de vertices
+
+	//Habilitamos el atributo: queremos proporcionar los datos de la posicion desde un buffer
 	gl.enableVertexAttribArray(glProgram.vertexPositionAttribute);
-	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuf);
+	gl.bindBuffer(gl.ARRAY_BUFFER, triangles.vertexBuf);
+	gl.vertexAttribPointer(glProgram.vertexPositionAttribute,3, gl.FLOAT,false,0,0);
+
+	//*
+	//COLORES
+	//*
+	glProgram.vertexColorAttribute= gl.getAttribLocation(glProgram, "aVertexColor");
+
+	//Habilitamos el atributo: queremos proporcionar los datos de la posicion desde un buffer
+	gl.enableVertexAttribArray(glProgram.vertexColorAttribute);
+	gl.bindBuffer(gl.ARRAY_BUFFER, triangles.colorBufRelleno);
+	gl.vertexAttribPointer(glProgram.vertexColorAttribute,3, gl.FLOAT,false,0,0);
+
+	//DIBUJO
+	//Dibuja el tipo de primitiva, desde qué elemento comienza y cuantos dibuja
+	gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+	// BORDES 
+	glProgram.vertexPositionAttribute= gl.getAttribLocation(glProgram, "aVertexPosition");
+
+	//Habilitamos el atributo: queremos proporcionar los datos de la posicion desde un buffer
+	gl.enableVertexAttribArray(glProgram.vertexPositionAttribute);
+	gl.bindBuffer(gl.ARRAY_BUFFER, triangles.vertexBufBorde);
 	gl.vertexAttribPointer(glProgram.vertexPositionAttribute,3, gl.FLOAT,false,0,0);
 
 	glProgram.vertexColorAttribute= gl.getAttribLocation(glProgram, "aVertexColor");
 
-	// Buffer de colores
+	//Habilitamos el atributo: queremos proporcionar los datos de la posicion desde un buffer
 	gl.enableVertexAttribArray(glProgram.vertexColorAttribute);
-	gl.bindBuffer(gl.ARRAY_BUFFER, coloresRelleno);
+	gl.bindBuffer(gl.ARRAY_BUFFER, triangles.colorBufBorde);
 	gl.vertexAttribPointer(glProgram.vertexColorAttribute,3, gl.FLOAT,false,0,0);
-
-	glProgram.vertexColorAttribute= gl.getAttribLocation(glProgram, "aVertexColor");
-
-	//dibuja
-	gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-	/*
-		BORDES
-	*/
-	glProgram.vertexColorAttribute= gl.getAttribLocation(glProgram, "aVertexColor");
-
-	gl.enableVertexAttribArray(glProgram.vertexColorAttribute);
-	gl.bindBuffer(gl.ARRAY_BUFFER, coloresBorde);
-	gl.vertexAttribPointer(glProgram.vertexColorAttribute,3, gl.FLOAT,false,0,0);
-
-	// Dibuja el tipo de primitiva, desde qué elemento comienza y cuantos dibuja
-	gl.drawArrays(gl.LINE_STRIP, 0, 3);
-	gl.drawArrays(gl.LINE_STRIP, 3, 3);
-
+	gl.drawArrays(gl.LINES, 0, 12);
 
 }
 /** *************************************************
@@ -119,8 +159,8 @@ function initWebGL(){
 		// Funciones a ejecutar
 		setupWebGL();
 		initShaders();
-		initBuffers(triangles);
-		draw(triangles);
+		initBuffers();
+		draw();
 
 	}	
 	else{	

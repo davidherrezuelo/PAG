@@ -9,13 +9,21 @@
  var vertexShader,fragmentShader, glProgram;
 
 
-var triangle=[
-          //Triangulo  
-          -0.4, 0.2, 0.0, // A
-          0.0, 0.8, 0.0, //B
-          0.4, 0.2, 0.0, //C 
-			];
+var estrella = [
+  0.000,  0.866, 0.0,  // A
+ -0.750, -0.433, 0.0,  // B
+ -0.750, -0.433, 0.0,  // B
+  0.750, -0.433, 0.0,   // C
+  0.750, -0.433, 0.0,   // C
+  0.000,  0.866, 0.0,  // A
 
+  0.000,  -0.866, 0.0,  // D
+ -0.750, 0.433, 0.0,  // E
+ -0.750, 0.433, 0.0,  // E
+  0.750, 0.433, 0.0,  // F
+  0.750, 0.433, 0.0,   // F
+  0.000,  -0.866, 0.0,  // D
+];
 
 /****************/
 /** FUNCIONES **/
@@ -57,7 +65,8 @@ function draw(model){
 	gl.vertexAttribPointer(glProgram.vertexPositionAttribute,3, gl.FLOAT,false,0,0);
 
 	//Dibuja el tipo de primitiva, desde qué elemento comienza y cuantos dibuja
-	gl.drawArrays(gl.TRIANGLES, 0, 3);
+	gl.drawArrays(gl.LINE_STRIP, 0, 6);
+	gl.drawArrays(gl.LINE_STRIP, 6, 6);
 
 
 }
@@ -77,8 +86,8 @@ function initWebGL(){
 		// Funciones a ejecutar
 		setupWebGL();
 		initShaders();
-		initBuffers(triangle);
-		draw(triangle);
+		initBuffers(estrella);
+		draw(estrella);
 
 	}	
 	else{	

@@ -2,7 +2,7 @@
 <!doctype html>
 <html>
 	<head>
-		<title>WebGl2: Lab3: Ej1</title>
+		<title>WebGl2: Lab3: Triangulo varios colores</title>
 		<meta charset="utf-8">
 		<style>
 			body{ background-color: grey; }
@@ -13,33 +13,34 @@
 		    /* Transforma los vertices*/
 		    
 			in vec3 aVertexPosition;
-			in vec3 colorIn;
+			in vec3 aVertexColor;
 
-			out vec4 colorOut;
+			out vec4  colorOut;
 
 			void main(void) {				
 			    /* Transforma el vertice a coordenadas homogeneas*/
 			    gl_Position = vec4(aVertexPosition, 1.0);
-				colorOut = vec4(colorIn, 1.0);
+
+			    colorOut= vec4(aVertexColor,1.0);
 			}
 		</script>
 		<script id="shader-fs" type="x-shader/x-fragment">#version 300 es
 			/* FRAGMENT SHADER*/
-			/* Coge cada fragment que recibe y lo pinta de blanco*/
-
+			/* Coge cada fragment que recibe y lo pinta de con un color*/
+			
 			precision mediump float;
 
-			in vec4 colorIn;
+			in vec4 colorOut;
 			out vec4 fragColor;
 
 			void main(void) {
-			  fragColor = colorIn;
+			  fragColor = colorOut;
 			}
 		</script>
 
 	</head>
 	<body onload="initWebGL()">
-		<canvas id="canvas" width="400" height="300">
+		<canvas id="canvas" width="400" height="400">
 		 El navegador no admite WEBGL
 		</canvas>
 		 <script src="webgl2_s2_1.js"> 	</script>
