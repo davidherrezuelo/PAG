@@ -1,4 +1,4 @@
-		// Funcionalidad Javascript 
+// Funcionalidad Javascript 
 // Funciones generales de webgl
 /** *************************************
    VARIABLES GLOBALES
@@ -8,78 +8,86 @@
  
  var vertexShader,fragmentShader, glProgram;
 
-
-var triangle=[
-          //Triangulo  
-         -0.5, -0.5, 0.0,	// A
-         -0.5,  0.5, 0.0,	// B
-		  0.5,  0.5, 0.0,	// C
-		 -0.5, -0.5, 0.0,	// A
-		  0.5,  0.5, 0.0,	// C
-		  0.5, -0.5, 0.0,	// D
-			];
-
-var colores=[
-           0.0, 0.0, 1.0,//color para vertice A
-           1.0, 0.0, 0.0, // color para vertice B
-           0.0, 0.0, 1.0, //color para vértice C
-		   0.0, 0.0, 1.0,//color para vertice A
-           0.0, 0.0, 1.0, // color para vertice C
-           1.0, 0.0, 0.0 //color para vértice D
-			];
+//Bufferes
+var buff;
 
 
 /****************/
 /** FUNCIONES **/
 /****************/
-/** *************************************************
-	initBuffers: iniciar los Bufferes
-	En esta función crearemos el buffer de vértices y el buffer de índices
- ****************************************************/
-function initBuffers(model){
-	//VERTICES
-	model.bufferVertices=gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, model.bufferVertices);
-	//gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(model.vertices),gl.STATIC_DRAW);
-	gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(model),gl.STATIC_DRAW);
+/**
+*Devuelve un entero aleatorio entre -1 y +1
+*/
 
-	//COLORES
-	model.bufferColores=gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, model.bufferColores);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colores),gl.STATIC_DRAW);
+function randomSpace(){
+  return ((Math.random()*2)-1);
+}
 
+
+
+/**
+* Envía al bufferData de las posiciones de los vértices, las coordenadas de un 
+* nuevo punto
+* 
+* @param: x,y coordenadas de un nuevo punto
+*/
+function setTriangles(x, y) {
+  
+  //var x1 = x;
+  //var y1 = y;
+
+  x2=x+0.1+randomSpace()/30;
+  y2=y+0.1+randomSpace()/30;
+  x3=x+0.1+randomSpace()/30;
+  y3=y-0.1+randomSpace()/30;
+
+  //console.log(x,y); // tipica instrucción para ver si todo va bien
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([x, y, x2, y2, x3, y3]), gl.STATIC_DRAW);
 }
 
 /** *************************************************
-	draw (model): Enlazar los bufferes a los vértices declarados
+	initBuffer_Draw(): Enlazar los bufferes a los vértices declarados
 	
  ****************************************************/
-function draw(model){
+
+
+function initBuffer_Draw(){
 
 	/**
-	 POSICION
-
+	* POSICION
 	*/
-	
-	glProgram.vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition")
+
+	glProgram.vertexPositionAttribute= gl.getAttribLocation(glProgram, "aVertexPosition");
+
+	//COLORES
+	glProgram.vertexColorUniform= gl.getUniformLocation(glProgram, "colorUniform");
+
+     // Crear a buffer y enlaza.
+     buff = gl.createBuffer();
+     gl.bindBuffer(gl.ARRAY_BUFFER, buff);
+
+
+	//Habilitamos el atributo: queremos proporcionar los datos de la posicion desde un buffer
 	gl.enableVertexAttribArray(glProgram.vertexPositionAttribute);
-	gl.bindBuffer(gl.ARRAY_BUFFER, model.bufferVertices);
-	gl.vertexAttribPointer(glProgram.vertexPositionAttribute,3,gl.FLOAT,false,0,0);
-
-	/**
-	 COLORES
-	*/
-
-	glProgram.vertexColorAttribute = gl.getAttribLocation(glProgram, "aVertexColor");
-
-	gl.enableVertexAttribArray(glProgram.vertexColorAttribute);
-	gl.bindBuffer(gl.ARRAY_BUFFER, model.bufferColores);
-	gl.vertexAttribPointer(glProgram.vertexColorAttribute,3,gl.FLOAT,false,0,0);
-
-	//Dibuja el tipo de primitiva, desde qué elemento comienza y cuantos dibuja
-	gl.drawArrays(gl.TRIANGLES, 0, 6);
+	gl.vertexAttribPointer(glProgram.vertexPositionAttribute,2, gl.FLOAT,false,0,0);
 
 
+	/*
+    * Dibuja 150 puntos en posiciones aleatorias 
+    * con colores aleatorios
+    */
+    for (var ii = 0; ii < 50; ++ii) {
+      //Coordenadas aleatorias de un punto	
+		
+    	setTriangles(randomSpace(), randomSpace());
+
+        //Almaceno en la variable uniform un color aleatorio
+        gl.uniform4f(glProgram.vertexColorUniform, Math.random(), Math.random(), Math.random(), 1);
+
+        //Dibuja UN punto
+        gl.drawArrays(gl.TRIANGLES, 0, 3);	
+     }
 }
 /** *************************************************
  ==> Identifica el canvas y su contexto de webgl2
@@ -97,8 +105,7 @@ function initWebGL(){
 		// Funciones a ejecutar
 		setupWebGL();
 		initShaders();
-		initBuffers(triangle);
-		draw(triangle);
+		initBuffer_Draw();
 
 	}	
 	else{	
@@ -147,9 +154,9 @@ function initShaders()
 	glProgram = gl.createProgram();
 				
 //4. Adjunta al programa cada shader
-  gl.attachShader(glProgram, vertexShader);
-  gl.attachShader(glProgram, fragmentShader);
-  gl.linkProgram(glProgram);
+    gl.attachShader(glProgram, vertexShader);
+    gl.attachShader(glProgram, fragmentShader);
+    gl.linkProgram(glProgram);
 
 	if (!gl.getProgramParameter(glProgram, gl.LINK_STATUS)) {
 		   alert("No se puede inicializar el Programa .");

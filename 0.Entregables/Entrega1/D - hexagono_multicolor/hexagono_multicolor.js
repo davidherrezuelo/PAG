@@ -9,23 +9,26 @@
  var vertexShader,fragmentShader, glProgram;
 
 
-var triangle=[
-          //Triangulo  
-         -0.5, -0.5, 0.0,	// A
-         -0.5,  0.5, 0.0,	// B
-		  0.5,  0.5, 0.0,	// C
-		 -0.5, -0.5, 0.0,	// A
-		  0.5,  0.5, 0.0,	// C
-		  0.5, -0.5, 0.0,	// D
+var hexagon=[
+	   0.0,0.0,0.0,			// 0
+	   1.000,  0.000, 0.0,	// 1
+	   0.500,  0.866, 0.0,	// 2
+	  -0.500,  0.866, 0.0,	// 3
+	  -1.000,  0.000, 0.0,	// 4
+	  -0.500, -0.866, 0.0,	// 5
+	   0.500, -0.866, 0.0,	// 6
+	   1.000,  0.000, 0.0,	// 1
 			];
 
 var colores=[
-           0.0, 0.0, 1.0,//color para vertice A
-           1.0, 0.0, 0.0, // color para vertice B
-           0.0, 0.0, 1.0, //color para vértice C
-		   0.0, 0.0, 1.0,//color para vertice A
-           0.0, 0.0, 1.0, // color para vertice C
-           1.0, 0.0, 0.0 //color para vértice D
+		1.0,  1.0,  1.0,	// 0
+        1.0,  0.0,  0.0,	// 1
+	    1.0,  1.0,  0.0,	// 2
+	    0.0,  1.0,  0.0,	// 3
+	    0.0,  1.0,  1.0,	// 4
+	    0.0,  0.0,  1.0,	// 5
+	    1.0,  0.0,  1.0,	// 6
+	   	1.0,  0.0,  0.0,	// 1
 			];
 
 
@@ -58,7 +61,6 @@ function draw(model){
 
 	/**
 	 POSICION
-
 	*/
 	
 	glProgram.vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition")
@@ -77,7 +79,7 @@ function draw(model){
 	gl.vertexAttribPointer(glProgram.vertexColorAttribute,3,gl.FLOAT,false,0,0);
 
 	//Dibuja el tipo de primitiva, desde qué elemento comienza y cuantos dibuja
-	gl.drawArrays(gl.TRIANGLES, 0, 6);
+	gl.drawArrays(gl.TRIANGLE_FAN, 0, 8);
 
 
 }
@@ -97,8 +99,8 @@ function initWebGL(){
 		// Funciones a ejecutar
 		setupWebGL();
 		initShaders();
-		initBuffers(triangle);
-		draw(triangle);
+		initBuffers(hexagon);
+		draw(hexagon);
 
 	}	
 	else{	

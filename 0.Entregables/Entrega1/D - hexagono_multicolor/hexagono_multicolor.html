@@ -1,0 +1,54 @@
+
+<!doctype html>
+<html>
+	<head>
+		<title>WebGl2: Lab3: Triangulo un color</title>
+		<meta charset="utf-8">
+		<style>
+			body{ background-color: grey; }
+			canvas{ background-color: white; }
+		</style>
+		<script id="shader-vs" type="x-shader/x-vertex">#version 300 es
+		    /* Es el VERTEX SHADER*/
+		    /* Transforma los vertices*/
+		    
+			in vec3 aVertexPosition;
+			in vec3 aVertexColor;
+
+			out vec4 colorOut;
+
+			void main(void) {				
+			    /* Transforma el vertice a coordenadas homogeneas*/
+			    gl_Position = vec4(aVertexPosition, 1.0);
+
+				colorOut = vec4(aVertexColor,1.0);
+			}
+		</script>
+		<!--PREGUNTA: No se puede mandar al frag shader un vec4 del color???-->
+
+		<script id="shader-fs" type="x-shader/x-fragment">#version 300 es
+			/* FRAGMENT SHADER*/
+			/* Coge cada fragment que recibe y lo pinta de blanco*/
+
+			precision mediump float;
+
+			in vec4 colorOut;
+			out vec4 fragColor;
+
+			void main(void) {
+			  fragColor = colorOut;
+			}
+		</script>
+
+	</head>
+	<body onload="initWebGL()">
+		<canvas id="canvas" width="400" height="400">
+		 El navegador no admite WEBGL
+		</canvas>
+		 <script src="hexagono_multicolor.js"> 	</script>
+	</body>
+</html>
+
+
+
+

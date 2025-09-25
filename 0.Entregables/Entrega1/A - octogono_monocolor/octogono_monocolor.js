@@ -9,25 +9,18 @@
  var vertexShader,fragmentShader, glProgram;
 
 
-var triangle=[
-          //Triangulo  
-         -0.5, -0.5, 0.0,	// A
-         -0.5,  0.5, 0.0,	// B
-		  0.5,  0.5, 0.0,	// C
-		 -0.5, -0.5, 0.0,	// A
-		  0.5,  0.5, 0.0,	// C
-		  0.5, -0.5, 0.0,	// D
-			];
-
-var colores=[
-           0.0, 0.0, 1.0,//color para vertice A
-           1.0, 0.0, 0.0, // color para vertice B
-           0.0, 0.0, 1.0, //color para vértice C
-		   0.0, 0.0, 1.0,//color para vertice A
-           0.0, 0.0, 1.0, // color para vertice C
-           1.0, 0.0, 0.0 //color para vértice D
-			];
-
+var octogono = [
+   0.000,  0.000, 0.0,
+   0.924,  0.383, 0.0,
+   0.383,  0.924, 0.0,
+  -0.383,  0.924, 0.0,
+  -0.924,  0.383, 0.0,
+  -0.924, -0.383, 0.0,
+  -0.383, -0.924, 0.0,
+   0.383, -0.924, 0.0,
+   0.924, -0.383, 0.0,
+   0.924,  0.383, 0.0,
+];
 
 /****************/
 /** FUNCIONES **/
@@ -37,16 +30,11 @@ var colores=[
 	En esta función crearemos el buffer de vértices y el buffer de índices
  ****************************************************/
 function initBuffers(model){
-	//VERTICES
+	//Buffer de vertices
 	model.bufferVertices=gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, model.bufferVertices);
 	//gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(model.vertices),gl.STATIC_DRAW);
 	gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(model),gl.STATIC_DRAW);
-
-	//COLORES
-	model.bufferColores=gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, model.bufferColores);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colores),gl.STATIC_DRAW);
 
 }
 
@@ -56,28 +44,25 @@ function initBuffers(model){
  ****************************************************/
 function draw(model){
 
-	/**
-	 POSICION
-
-	*/
-	
-	glProgram.vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition")
-	gl.enableVertexAttribArray(glProgram.vertexPositionAttribute);
 	gl.bindBuffer(gl.ARRAY_BUFFER, model.bufferVertices);
-	gl.vertexAttribPointer(glProgram.vertexPositionAttribute,3,gl.FLOAT,false,0,0);
 
 	/**
-	 COLORES
+	* Obtener la referencia del atributo posición
 	*/
+	glProgram.vertexPositionAttribute= gl.getAttribLocation(glProgram, "aVertexPosition");
 
-	glProgram.vertexColorAttribute = gl.getAttribLocation(glProgram, "aVertexColor");
+	//Habilitamos el atributo: queremos proporcionar los datos de la posicion desde un buffer
+	gl.enableVertexAttribArray(glProgram.vertexPositionAttribute);
 
-	gl.enableVertexAttribArray(glProgram.vertexColorAttribute);
-	gl.bindBuffer(gl.ARRAY_BUFFER, model.bufferColores);
-	gl.vertexAttribPointer(glProgram.vertexColorAttribute,3,gl.FLOAT,false,0,0);
+	// Decimos a WebGL que coja los datos del buffer enlazado el ultimo
+	// cuántos componentes por vertice, tipo de datos, si queremos que los datos se
+	// normalicen (true) o no (false), cuántos bytes de datos hay que pasar para
+	//llegar del primer dato al siguiente (0), el offset que nos indica cuán lejos está 
+	//el dato dentro el buffer(0)
+	gl.vertexAttribPointer(glProgram.vertexPositionAttribute,3, gl.FLOAT,false,0,0);
 
 	//Dibuja el tipo de primitiva, desde qué elemento comienza y cuantos dibuja
-	gl.drawArrays(gl.TRIANGLES, 0, 6);
+	gl.drawArrays(gl.TRIANGLE_FAN, 0, 10);
 
 
 }
@@ -97,8 +82,8 @@ function initWebGL(){
 		// Funciones a ejecutar
 		setupWebGL();
 		initShaders();
-		initBuffers(triangle);
-		draw(triangle);
+		initBuffers(octogono);
+		draw(octogono);
 
 	}	
 	else{	
