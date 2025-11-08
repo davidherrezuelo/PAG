@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>WebGl2: Rombos Aleatorios</title>
+		<meta charset="utf-8">
+		<style>
+			body{ background-color: white; }
+			canvas{ background-color: white; }
+		</style>
+		<script id="shader-vs" type="x-shader/x-vertex">#version 300 es
+		    /* Es el VERTEX SHADER*/
+		    /* Transforma los vertices*/
+		    
+			in vec2 aVertexPosition;
+
+
+			void main(void) {				
+			    /* Transforma el vertice a coordenadas homogeneas*/
+			    gl_Position = vec4(aVertexPosition,0.0, 1.0);
+			    gl_PointSize=10.0;
+			    
+			}	
+		</script>
+		<script id="shader-fs" type="x-shader/x-fragment">#version 300 es
+			/* FRAGMENT SHADER*/
+			/* Coge cada fragment que recibe y lo pinta de con un color*/
+			precision mediump float;
+
+
+			out vec4 fragColor;
+
+			uniform vec4 colorUniform;
+
+			void main(void) {
+			  fragColor = vec4(colorUniform);
+			}
+		</script>
+
+	</head>
+	<body onload="initWebGL()">
+		<h1> Pinta una serie de rombos con posicion, rotacion, dimensiones y color aleatorios</h1>
+		<canvas id="canvas" width="500" height="500">
+		 El navegador no admite WEBGL
+		</canvas>
+		 <script src="rombos_aleatorios.js"> 	</script>
+	</body>
+</html>
+
+
+
+
