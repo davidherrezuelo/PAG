@@ -1,0 +1,60 @@
+
+<!doctype html>
+<html>
+  <head>
+    <title>WebGl2: Lab5: Triángulo doble a color:Rotación Matriz</title>
+    <meta charset="utf-8">
+    <style>
+      body{ background-color: lightgrey; }
+      canvas{ background-color: white; }
+    </style>
+
+        <!-- BIBLIOTECA DE OPERACIONES DE MATRICES-->
+     <script src="./gl-matrix-min.js"> </script>
+
+
+     
+     <!-- VS y FS-->
+    <script id="shader-vs" type="x-shader/x-vertex">#version 300 es
+     /* Es el VERTEX SHADER*/
+     /* Transforma los vertices*/
+
+      in vec2 aVertexPosition;
+      in vec3 aVertexColor;
+      out vec4  colorOut;
+      
+      //La rotacion sencilla
+      uniform mat4 uMatrix;
+
+      void main() {
+  
+        //AHORA transformo las coordenadas
+        gl_Position=uMatrix*vec4(aVertexPosition,0.0,1.0);
+
+        colorOut= vec4(aVertexColor,1.0);
+    }
+    </script>
+
+    <script id="shader-fs" type="x-shader/x-fragment">#version 300 es
+      /* FRAGMENT SHADER*/
+      /* Coge cada fragment que recibe y lo pinta*/
+      precision mediump float;
+
+      in vec4 colorOut;
+      out vec4 fragColor;
+
+      void main(void) {
+        fragColor = colorOut;
+      }
+</script>
+</head>
+  <body onload="initWebGL()">
+    <h1> Lab5: Transformaciones 2D: Triangulos: rotacion Matriz Biblioteca </h1>
+
+      <canvas id="canvas" width="600" height="600" >
+      El navegador no admite WEBGL
+      </canvas>
+
+     <script src="contexto2_triangulodoble_rotMat3.js">   </script>
+  </body>
+</html>

@@ -1,0 +1,85 @@
+
+<!doctype html>
+<html>
+  <head>
+    <title>WebGl2: Lab5: Triángulo doble a color:Rotación</title>
+    <meta charset="utf-8">
+    <style>
+      body{ background-color: lightgrey; }
+      canvas{ background-color: white; }
+      .slider {
+          -webkit-appearance: none;
+          width: 100%;
+          height: 15px;
+          border-radius: 5px;  
+          background: #d3d3d3;
+          outline: none;
+          opacity: 0.7;
+          -webkit-transition: .2s;
+          transition: opacity .2s;
+        }
+      /* Mouse-over effects */
+      .slider:hover {
+          opacity: 1; /* Fully shown on mouse-over */
+      }
+        .containerCanvas {
+            width: 75%; 
+            float: left;
+            display:inline-block;
+
+        }
+        .containerSlider {
+            width: 25%; 
+            float: right;
+            display:inline-block;
+        }
+    </style>
+    <script id="shader-vs" type="x-shader/x-vertex">#version 300 es
+     /* Es el VERTEX SHADER*/
+     /* Transforma los vertices*/
+
+      in vec2 aVertexPosition;
+      in vec3 aVertexColor;
+      out vec4  colorOut;
+      
+      //La rotacion sencilla
+      uniform float ucosB, usinB;
+
+      void main() {
+  
+        //AHORA transformo las coordenadas
+        gl_Position.x = aVertexPosition.x * ucosB - aVertexPosition.y * usinB;
+        gl_Position.y = aVertexPosition.x * usinB + aVertexPosition.y * ucosB;
+        gl_Position.z = 0.0;
+        gl_Position.w = 1.0;
+
+        gl_PointSize=10.0; //TAMAÑO DEL PUNTO
+        colorOut= vec4(aVertexColor,1.0);
+    }
+    </script>
+
+    <script id="shader-fs" type="x-shader/x-fragment">#version 300 es
+      /* FRAGMENT SHADER*/
+      /* Coge cada fragment que recibe y lo pinta*/
+      precision mediump float;
+
+      in vec4 colorOut;
+      out vec4 fragColor;
+
+      void main(void) {
+        fragColor = colorOut;
+      }
+</script>
+</head>
+  <body onload="initWebGL()">
+    <h1> Lab5: Transformaciones 2D: Triangulos: rotacion en VS  </h1>
+    <div class="containerCanvas">
+      <canvas id="canvas" width="600" height="600">
+      El navegador no admite WEBGL
+      </canvas>
+    </div>
+     <script src="contexto2_triangulodoble_rot.js">   </script>
+  </body>
+</html>
+
+
