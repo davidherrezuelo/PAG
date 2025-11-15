@@ -17,7 +17,7 @@
 		    /* Transforma los vertices*/
 		    
 			in vec3 aVertexPosition;
-			in vec3 aVertexColor;
+			uniform vec3 uColor;
 			uniform mat4 uMatrix;
 
 			out vec4 colorOut;
@@ -27,7 +27,7 @@
 			    /* Transforma el vertice a coordenadas homogeneas*/
 				vec4 aVertexPosition4 = uMatrix*vec4(aVertexPosition,1.0);
 			    gl_Position = aVertexPosition4;
-				colorOut = vec4(aVertexColor, 1.0);
+				colorOut = vec4(uColor, 1.0);
 			}
 		</script>
 		<script id="shader-fs" type="x-shader/x-fragment">#version 300 es

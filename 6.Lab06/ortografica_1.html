@@ -1,0 +1,346 @@
+<!--PRISMA 3d
+    -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>WebGL -  TALLER DE PERSPECTIVA 1</title>
+<style>
+        body{ background-color: grey; }
+      canvas{ background-color: white;
+              border: 1px solid black; }
+         div{ display:block;           }
+
+</style>
+<!--**********************************************
+      SCRIPTS BIBLIOTECAS DE AYUDA PARA ROTACIONES 3D 
+    ***********************************************  -->
+<script type="text/javascript" src="../../LibJS/gl-matrix-min.js"></script>
+<!--
+  <script type="text/javascript" src="../../LibJS/GlMatrix.js"></script>
+
+<script type="text/javascript" src="js/webgl-utils.js"></script>
+ -->
+
+<script>
+
+  // ****************** Variables Globales
+  let   gl = null,
+        canvas = null,
+        glProgram = null,
+        fragmentShader = null,
+        vertexShader = null;
+  let   positionLocatAttrib =null,
+        colorLocatAttrib=null;
+
+  let   verticeBuffer = null;
+  let   vertices=null; //coord de los vértices
+
+
+  let   verticeColors, //colores
+        colorBuffer; //buffer de colores a cada vertice
+
+  let ratonAbajo = false;
+  let posRatonX = null;
+  let posRatonY = null;
+
+
+    let MvMatrix=null,
+        PMatrix=null;
+
+    let uMvMatrix=null, uPMatrix;
+
+      
+      
+/********************* 0. UTILIDADES **************************************/ 
+  /******   FunCiones de inicialización de matrices  ********* */
+
+      function inicializarMatrices(){
+      	MvMatrix=mat4.create();
+      	PMatrix=mat4.create();
+
+      	mat4.identity(MvMatrix);
+      	mat4.identity(PMatrix);
+
+      }
+/*********************** RATON Y TECLADO: Funciones de control del Movimiento y Rotación***/
+	/* Deteccion de eventos*/
+
+      function deteccionEventos(){
+      	canvas.onmousedown=pulsaRatonAbajo;
+      	document.onmouseup=pulsaRatonArriba;
+      	document.onmousemove=mueveRaton;
+      	document.onkeydown=pulsaTecla;
+      }
+     /* Gestion de ventos*/
+
+     function pulsaRatonAbajo(event) {
+        ratonAbajo = true;
+        posRatonX = event.clientX;
+        posRatonY = event.clientY;
+    }
+
+    function pulsaRatonArriba(event) {
+        ratonAbajo = false;
+    }
+
+    function mueveRaton(event) {
+        if (!ratonAbajo) {
+            return;
+        }
+        let nuevaX = event.clientX;
+        let nuevaY = event.clientY;
+        let deltaX = nuevaX - posRatonX;
+        let deltaY = nuevaY - posRatonY;
+
+        let idMatrix=mat4.create();
+        
+        mat4.rotate(idMatrix,idMatrix,degToRad(deltaX/2), [0,1,0]);
+        mat4.rotate(idMatrix,idMatrix,degToRad(deltaY/2), [1,0,0]);
+
+        mat4.multiply(MvMatrix, MvMatrix,idMatrix );
+        posRatonX = nuevaX;
+        posRatonY = nuevaY;
+    }
+
+
+    function degToRad(degrees) {
+        return degrees * Math.PI / 180;
+    }
+
+    function pulsaTecla(event){
+    	var g_near=0, g_far=0;
+    	switch(event.keyCode){
+    		case 39: console.log("39");g_near += 0.01; break;  // The right arrow key was pressed
+    		case 37: g_near -= 0.01; break;  // The left arrow key was pressed
+    		case 38: g_far += 0.01;  break;  // The up arrow key was pressed
+    		case 40: g_far -= 0.01;  break;  // The down arrow key was pressed
+    		default: return; // Prevent the unnecessary drawing
+  		}
+    }
+
+
+/********************* 1. INIT WEBGL **************************************/ 
+function initWebGL()
+      {
+        canvas = document.getElementById("canvas");         
+        gl = canvas.getContext("webgl");
+                
+        if(gl)
+        {
+          setupWebGL();
+          initShaders();
+          deteccionEventos();
+          setupBuffers();
+          drawScene();
+          animacion();  
+        } 
+        else{  
+          alert(  "El navegador no soporta WEBGL.");
+        }
+      }
+      /********************* 2.setupWEBGL **************************************/ 
+      function setupWebGL()
+      {
+        //Pone el color de fondo a verde ---para 2d no funciona
+        gl.clearColor(1.0, 1.0, 1.0, 1.0);  
+
+        //Crea un viewport del tamaño del canvas
+        gl.viewport(0, 0, canvas.width, canvas.height);
+
+        // Modo ON DEPTH
+        gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT); 
+        gl.enable(gl.DEPTH_TEST);
+
+        //Inicializarmatrices de movimeinto
+        inicializarMatrices();
+  
+        //gl.enable ACTIVA una serie de caracteristicas tan variadas como:
+        // a) Mezcla de colores (pordefecto está activado)
+        gl.enable(gl.BLEND);
+        // b) CullFace (me desaparecen tres triangulos o no, jugar con el CCW y EL CW)
+        gl.enable(gl.CULL_FACE);
+
+        //Perspectiva
+
+        /* *** 1 ORTOGRAFICA  *****/
+        // La proyetccion ortográfica es por defecto.
+
+        
+      }
+      /********************* 3. INIT SHADER **************************************/ 
+      function initShaders()
+      {
+       // Esta función inicializa los shaders
+       
+        //1.Obtengo la referencia de los shaders 
+        let fs_source = document.getElementById('fragment-shader').innerHTML;
+        let vs_source = document.getElementById('vertex-shader').innerHTML;
+
+        //2. Compila los shaders  
+        vertexShader = makeShader(vs_source, gl.VERTEX_SHADER);
+        fragmentShader = makeShader(fs_source, gl.FRAGMENT_SHADER);
+        
+          //3. Crea un programa
+          glProgram = gl.createProgram();
+        
+        //4. Adjunta al programa cada shader
+          gl.attachShader(glProgram, vertexShader);
+          gl.attachShader(glProgram, fragmentShader);
+          gl.linkProgram(glProgram);
+
+        if (!gl.getProgramParameter(glProgram, gl.LINK_STATUS)) {
+           alert("No se puede inicializar el Programa .");
+          }
+        
+        //5. Usa el programa
+        gl.useProgram(glProgram);
+      }
+     /********************* 3.1. MAKE SHADER **************************************/ 
+      function makeShader(src, type)
+      {
+        //Compila cada  shader
+        let shader = gl.createShader(type);
+        gl.shaderSource(shader, src);
+        gl.compileShader(shader);
+
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+              alert("Error de compilación del shader: " + gl.getShaderInfoLog(shader));
+          }
+        return shader;
+      }
+
+     /********************* 4 SETUP BUFFERS  **************************************/ 
+      function setupBuffers()
+      {  
+        //DEFINCION DE los tres triangulos a 
+          vertices = [ 
+          -0.25,0,-0.75,//triangulo delantero
+          0.25,0,-0.75,
+          0,0.75,-0.75,
+          -0.35,0.5,0, //tiangulo boca abajo central
+          0,-0.25,0,          
+          0.35,0.5,0,
+          -0.75,-0.2,0.75,//triangulo aplastado fondo
+          0.75,-0.2,0.75,
+          0,0.25,0.75,
+
+        ];
+        // BUffer que almacena los vértices
+        verticeBuffer = gl.createBuffer();
+       gl.bindBuffer(gl.ARRAY_BUFFER, verticeBuffer);
+       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW); 
+      
+      
+              
+        /* +++++++++++++++++++++++++ 
+       **BUFFER PARA ATRIBUTO POSICION DE VERTICES
+       */
+       //Busca dónde debe ir la posicion de los vértices en el programa.
+       positionLocatAttrib = gl.getAttribLocation(glProgram, "aVertexPosition");
+       gl.enableVertexAttribArray(positionLocatAttrib);
+       //Enlazo con las posiciones de los vértices
+       gl.bindBuffer(gl.ARRAY_BUFFER, verticeBuffer);
+       gl.vertexAttribPointer(positionLocatAttrib, 3, gl.FLOAT, false, 0, 0);
+
+
+            /* ******* COLORES ******* */
+        let verticeColors = [ 
+        0.7,0.7,0.1,
+        0.7,0.7,0,
+        1,0.7,0,
+        0,0.8,0.2,
+        0,0.9,0.0,
+        0,0.8,0.2,
+        0,0.2,0.8,
+        0,0.5,0.8,
+        0,0.2,0.8,
+        ];
+        //OTRO BUFFER
+        colorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verticeColors), gl.STATIC_DRAW);  
+
+            /*
+            ** BUFFER PARA ATRIBUTO COLOR DE VERTICES
+            */
+       colorLocatAttrib = gl.getAttribLocation(glProgram, "aVertexColor");
+       gl.enableVertexAttribArray(colorLocatAttrib);
+       gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+       gl.vertexAttribPointer(colorLocatAttrib, 3, gl.FLOAT, false, 0, 0);
+
+        // Localiza la matriz en el glProgram
+        uMvMatrix = gl.getUniformLocation(glProgram, 'uMvMatrix');
+
+        // Localiza la matriz en el glProgram
+        uPMatrix = gl.getUniformLocation(glProgram, 'uPMatrix');
+
+      } //de la funcion   
+
+/********************* Draw Scene        *********************************** */
+  function drawScene(){
+      
+        gl.uniformMatrix4fv(uMvMatrix, false, MvMatrix);
+        gl.uniformMatrix4fv(uPMatrix, false, PMatrix);
+        
+        // Dibuja los trres triangulos
+        gl.drawArrays(gl.TRIANGLES, 0, 9)
+
+    }//de la funcion
+
+    function animacion(){
+
+        drawScene();
+        requestAnimationFrame(animacion);
+    }
+
+
+</script>
+<!-- ****************   VERTEX SHADER *******************-->
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+  attribute vec3 aVertexPosition;
+  attribute vec3 aVertexColor;
+
+  varying highp vec4 vColor;
+//Matriz de trasnformación
+ uniform mat4 uMvMatrix;
+ uniform mat4 uPMatrix;
+
+void main() {
+  
+  //AHORA transformo las coordenadas
+   gl_Position= uPMatrix*uMvMatrix*vec4(aVertexPosition,1.0);
+   //gl_Position= vec4(aVertexPosition,1.0);
+   gl_PointSize=10.0; //TAMAÑO DEL PUNTO
+
+   vColor= vec4(aVertexColor,1.0);
+   
+}
+</script>
+<!-- ****************   FRAGMENT SHADER *******************-->
+<script id="fragment-shader" type="x-shader/x-fragment">
+//uniform vec4 uColor;
+varying  highp vec4 vColor;
+void main() {
+  //Color rojo
+   gl_FragColor = vColor;
+}
+</script>
+
+
+<!-- ****************                    *******************-->
+<!-- ****************   html             *******************-->
+<!-- ****************                    *******************-->
+
+</head>
+<body onload="initWebGL()">
+<div class="description">
+  <h1> 1. Proyección ortográfica </h1>
+</div>
+<canvas id="canvas" width="600" height="600"></canvas>
+
+</body>
+</html>
+
+

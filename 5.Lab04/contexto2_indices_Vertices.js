@@ -15,14 +15,15 @@ var model = {
 		 0.5, 0.0,  0.5,
 		-0.5, 0.0,  0.5,
 		-0.5, 0.0, -0.5,
-		 0.0, 0.5,  0.0
+		 0.0, 0.65,  0.0
 	],
 	"colores" : [
 		1,0,0,
 		0,1,0,
 		0,0,1,
-		1,0,1,
 		0,1,1,
+		1,0,1,
+		1,0,1,
 	],
     // indices para gl.LINES
     "indices_lines" : [
@@ -31,8 +32,10 @@ var model = {
 	],
      // indices para gl.TRIANGLES
     "indices_triangles" : [
-		2,1,0,  3,2,0, 0,1,4, 2,1,4, 3,2,4, 0,3,4, 
+		0,1,4, 1,2,4, 2,3,4, 3,0,4, 0,3,1, 1,3,2
 	],
+
+	
 }
 
 var angle = 0;
@@ -63,6 +66,7 @@ function initBuffers(){
   model.idBufferColores = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, model.idBufferColores);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.colores), gl.DYNAMIC_DRAW);
+  
 }
 
 /** *************************************************
@@ -70,13 +74,18 @@ function initBuffers(){
 	
  ****************************************************/
 function draw(){
+	gl.enable(gl.DEPTH_TEST);
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	gl.useProgram(glProgram);
+	gl.colorTriangulo = gl.getUniformLocation(glProgram,"uColor");
+
+
 	var radian = Math.PI * angle / 180.0; // Convert to radians
 
     //Creo una matriz con GLMatrix3
     var Matrix = mat4.create();
 
-    mat4.fromRotation(Matrix,radian,[0,1,1]);
+    mat4.fromRotation(Matrix,radian,[0.5,1,0.5]);
 
 
 
@@ -102,23 +111,29 @@ function draw(){
   	gl.vertexAttribPointer(glProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
 	gl.drawArrays(gl.POINTS, 0, model.vertices.length/3);
 
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesLineas);
-  	gl.drawElements (gl.LINES, model.indices_lines.length, gl.UNSIGNED_SHORT, 0);
+
 	/**
 	 * COLOR
 	 */
 
-	glProgram.vertexColorAttribute = gl.getAttribLocation(glProgram, "aVertexColor");
-	gl.enableVertexAttribArray(glProgram.vertexColorAttribute);
-
-	gl.bindBuffer(gl.ARRAY_BUFFER, model.idBufferColores);
-	gl.vertexAttribPointer(glProgram.vertexColorAttribute, 3, gl.FLOAT, false, 0, 0);
+//	glProgram.vertexColorAttribute = gl.getAttribLocation(glProgram, "aVertexColor");
+//	gl.enableVertexAttribArray(glProgram.vertexColorAttribute);
+//
+//	gl.bindBuffer(gl.ARRAY_BUFFER, model.idBufferColores);
+//	gl.vertexAttribPointer(glProgram.vertexColorAttribute, 3, gl.FLOAT, false, 0, 0);
 
   	//Para Indices
-  	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesTriangulo);
-  	gl.drawElements (gl.TRIANGLES, model.indices_triangles.length, gl.UNSIGNED_SHORT, 0);
+	for(let i=0; i<model.indices_triangles.length; i++){
+		
+		gl.uniform3f(gl.colorTriangulo, model.colores[i*3], model.colores[i*3+1], model.colores[i*3+2]);
+		
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesTriangulo);
+		gl.drawElements (gl.TRIANGLES, 3, gl.UNSIGNED_SHORT, i*2*3);
+	}
 
-
+	gl.uniform3f(gl.colorTriangulo, 0.0, 0.0, 0.0);
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesLineas);
+  	gl.drawElements (gl.LINES, model.indices_lines.length, gl.UNSIGNED_SHORT, 0);
 }
 /** *************************************************
  ==> Identifica el canvas y su contexto de webgl2
@@ -172,6 +187,7 @@ function setupWebGL()
 
 	//Crea un viewport del tamaño del canvas
 	gl.viewport(0, 0, canvas.width, canvas.height);
+	gl.enable(gl.CULL_FACE)
 }
 
 /******************************************************
