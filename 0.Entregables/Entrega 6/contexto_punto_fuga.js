@@ -21,53 +21,47 @@ var camState = {
     fov: 60.0,
     znear: 0.1,
     zfar: 10.0,
-    pos: [2,2,4],
+    pos: [0,0.1,-2],
     look: [0,0,0]
   };
 
 var model = {
     "vertices" : [
-		 0.50000,  0.5,  0.0000, 
-		 0.15450,  0.5,  0.4755, 
-		 -0.4045,  0.5,  0.2939, 
-		 -0.4045,  0.5, -0.2939, 
-		 0.15450,  0.5, -0.4755, 
- 
-		 0.50000, -0.5,  0.0000, 
-		 0.15450, -0.5,  0.4755, 
-		 -0.4045, -0.5,  0.2939, 
-		 -0.4045, -0.5, -0.2939, 
-		 0.15450, -0.5, -0.4755, 
+		-0.1, -0.3, 0,
+		0.1, -0.3, 0,
+		0.0, 0.3, 0,
 	],
 
 	"colores" : [
-		1,0,0,
-		0,1,0,
-		0,0,1,
-		0,1,1,
-		1,0,1,
-		1,1,0,
-		1,0,0.5
+    [1.0, 0.2, 0.2],
+    [1.0, 0.2, 0.2],  
+    [0.2, 1.0, 0.4],
+	[0.2, 1.0, 0.4],  
+    [0.2, 0.4, 1.0],
+	[0.2, 0.4, 1.0],  
+    [1.0, 0.8, 0.2],
+	[1.0, 0.8, 0.2],  
+	[0.3, 0.9, 0.9],
+	[0.3, 0.9, 0.9],
 	],
     // indices para gl.LINES
     "indices_lines" : [
-		0,1, 1,2, 2,3, 3,4, 4,0,
-		0,5, 1,6, 2,7, 3,8, 4,9,
-		5,6, 6,7, 7,8, 8,9, 9,5,
 	],
      // indices para gl.TRIANGLE_FAN
     "indices_bases" : [
-		0,1,2,3,4,
-		9,8,7,6,5,
 	],
 	"indices_lados" : [
-		1,0,5,6,
-		2,1,6,7,
-		3,2,7,8,
-		4,3,8,9,
-		0,4,9,5,
 	],
-	"Matrix" : mat4.create()
+	"translateXYZ" : [
+		[0.5, 0.3, 0], 
+		[-0.5, 0.3, 0], 
+		[0.5, 0.3, 1], 
+		[-0.5, 0.3, 1], 
+		[0.5, 0.3, 2], 
+		[-0.5, 0.3, 2], 
+		[0.5, 0.3, 3], 
+		[-0.5, 0.3, 3], 
+	],
 }
 
 var angle = 0;
@@ -180,19 +174,6 @@ function initBuffers(){
   gl.bindBuffer (gl.ARRAY_BUFFER, model.idBufferVertices);
   gl.bufferData (gl.ARRAY_BUFFER, new Float32Array(model.vertices), gl.DYNAMIC_DRAW);
   
-  //Buffer de Indices a vértices
-  model.idBufferIndicesBases = gl.createBuffer();
-  gl.bindBuffer (gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesBases);
-  gl.bufferData (gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.indices_bases), gl.DYNAMIC_DRAW);
-
-  model.idBufferIndicesLados = gl.createBuffer();
-  gl.bindBuffer (gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesLados);
-  gl.bufferData (gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.indices_lados), gl.DYNAMIC_DRAW);
-
-  model.idBufferIndicesLineas = gl.createBuffer();
-  gl.bindBuffer (gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesLineas);
-  gl.bufferData (gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.indices_lines), gl.DYNAMIC_DRAW);
-  
 }
 
 
@@ -204,32 +185,8 @@ function draw(){
 	gl.enable(gl.DEPTH_TEST);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	gl.useProgram(glProgram);
-	gl.colorTriangulo = gl.getUniformLocation(glProgram,"uColor");
-
-
-
-
-//	var radian = Math.PI * angle / 180.0; // Convert to radians
-//
-//    //Creo una matriz con GLMatrix3
-//    
-//
-//    mat4.fromRotation(model.Matrix,radian,[0.5,1,0.5]);
-//
-//
-//
-//    //Localiza la variable en el programa
-
-
 
 	
-	
-	glProgram.uMatrix = gl.getUniformLocation(glProgram, "uModelMatrix");
-	
-	gl.uniformMatrix4fv(glProgram.uMatrix, false, model.Matrix);
-
-	////
-
 	// view matrix
 
 	mat4.lookAt(ViewMatrix, camState.pos, camState.look, [0,1,0]);
@@ -241,7 +198,6 @@ function draw(){
 	const fovY = degToRad(Number(camState.fov));
 	mat4.perspective(ProjectionMatrix, fovY, canvas.width/canvas.height, camState.znear, camState.zfar);
 
-	//los multiplicamos y lo pasamos
 	glProgram.uMatrix = gl.getUniformLocation(glProgram, "uProjectMatrix");
 	gl.uniformMatrix4fv(glProgram.uMatrix, false, ProjectionMatrix);
 
@@ -254,48 +210,27 @@ function draw(){
 	gl.uniform1f(glProgram.uFloat, Number(camState.zfar));
 	
 	/**
-	* POSICION
+	* POSICION (y modelMatrix)
 	*/
-
-	glProgram.vertexPositionAttribute= gl.getAttribLocation(glProgram, "aVertexPosition");
-
-	//Habilitamos el atributo: queremos proporcionar los datos de la posicion desde un buffer
-	gl.enableVertexAttribArray(glProgram.vertexPositionAttribute);
-
-	gl.bindBuffer(gl.ARRAY_BUFFER, model.idBufferVertices);
-  	gl.vertexAttribPointer(glProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
-	gl.drawArrays(gl.POINTS, 0, model.vertices.length/3);
-
-	/**
-	 * COLOR
-	 */
-
-//	glProgram.vertexColorAttribute = gl.getAttribLocation(glProgram, "aVertexColor");
-//	gl.enableVertexAttribArray(glProgram.vertexColorAttribute);
-//
-//	gl.bindBuffer(gl.ARRAY_BUFFER, model.idBufferColores);
-//	gl.vertexAttribPointer(glProgram.vertexColorAttribute, 3, gl.FLOAT, false, 0, 0);
-
-	//Para bases
-	for(let i=0; i<2; i++){
+	for(let i=0; i<8; i++){
+		glProgram.colorTriangulo = gl.getUniformLocation(glProgram,"uColor");
+		gl.uniform3f(glProgram.colorTriangulo, model.colores[i][0],model.colores[i][1],model.colores[i][2]);
 		
-		gl.uniform3f(gl.colorTriangulo, model.colores[3*i], model.colores[3*i+1], model.colores[3*i+2]);
-		
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesBases);
-		gl.drawElements (gl.TRIANGLE_FAN, 5, gl.UNSIGNED_SHORT, i*2*5);
+		tempMatrix = mat4.create();
+		mat4.translate(tempMatrix, tempMatrix, model.translateXYZ[i])
+		glProgram.uMatrix=gl.getUniformLocation(glProgram,"uModelMatrix");
+		gl.uniformMatrix4fv(glProgram.uMatrix, false, tempMatrix);
+
+		glProgram.vertexPositionAttribute= gl.getAttribLocation(glProgram, "aVertexPosition");
+		//Habilitamos el atributo: queremos proporcionar los datos de la posicion desde un buffer
+		gl.enableVertexAttribArray(glProgram.vertexPositionAttribute);
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, model.idBufferVertices);
+		gl.vertexAttribPointer(glProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+		gl.drawArrays(gl.TRIANGLES, 0, model.vertices.length/3);
 	}
 
-	for(let i=0; i<5; i++){
-		
-		gl.uniform3f(gl.colorTriangulo, model.colores[6+3*i], model.colores[6+3*i+1], model.colores[6+3*i+2]);
-		
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesLados);
-		gl.drawElements (gl.TRIANGLE_FAN, 4, gl.UNSIGNED_SHORT, i*2*4);
-	}
-//
-	gl.uniform3f(gl.colorTriangulo, 0.0, 0.0, 0.0);
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesLineas);
-  	gl.drawElements (gl.LINES, model.indices_lines.length, gl.UNSIGNED_SHORT, 0);
+
 }
 /** *************************************************
  ==> Identifica el canvas y su contexto de webgl2
@@ -313,7 +248,7 @@ function initWebGL(){
 		// Funciones a ejecutar
 		setupWebGL();
 		initShaders();
-		detectMouse();
+		//detectMouse();
 		detectValues();
 		initBuffers();            
 		(function animLoop(){

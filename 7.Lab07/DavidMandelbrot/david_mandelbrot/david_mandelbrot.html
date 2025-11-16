@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+	<head>
+		<title>WebGl2: Lab6: Indices a Vértices</title>
+		<meta charset="utf-8">
+		<style>
+			body{ background-color: lightgrey; }
+			canvas{ background-color: white; }
+
+		</style>
+		        <!-- BIBLIOTECA DE OPERACIONES DE MATRICES-->
+    	<script src="./gl-matrix-min.js"> </script>
+
+		<script id="shader-vs" type="x-shader/x-vertex">#version 300 es
+			precision mediump float;   
+			in vec2 aVertexPosition;
+
+			out vec4 colorOut;
+
+			void main() {
+				gl_Position=vec4(aVertexPosition, 0.0, 0.0);
+			}
+		</script>
+		<script id="shader-fs" type="x-shader/x-fragment">#version 300 es
+			/* FRAGMENT SHADER*/
+			/* Coge cada fragment que recibe y lo pinta*/
+
+			precision mediump float;
+
+			uniform vec2 uResolucion;
+
+			out vec4 fragColor;
+
+			void main(void) {
+				vec4 color= vec4(0.9, 0.3, 0.3, 1.0);
+				vec2 coords = gl_FragCoord.xy / uResolucion * vec2(2.0, 2.0) - vec2(1.5,1.0);
+				vec2 z = vec2(0,0);
+
+				for(int i=0; i<300; i++){
+					z = vec2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y) + coords;
+					if (dot(z,z)>4.0) break;
+				}
+
+				if (dot(z,z)>4.0 && dot(z,z)<=5.0) color= vec4(0.95, 0.5, 0.55, 1.0);
+				if (dot(z,z)>5.0 && dot(z,z)<=6.0) color= vec4(0.95, 0.7, 0.6, 1.0);
+				if (dot(z,z)>6.0 && dot(z,z)<=7.0) color= vec4(0.60, 0.7, 0.75, 1.0);
+				if (dot(z,z)>7.0 && dot(z,z)<=8.0) color= vec4(0.45, 0.55, 0.9, 1.0);
+				if (dot(z,z)>8.0) color= vec4(0.3, 0.3, 1.0, 0.9);
+
+				fragColor = color;
+			}
+		</script>
+
+	</head>
+	<body onload="initWebGL()">
+		<h1> Lab8: Mandelbrot</h1>
+			<canvas id="canvas" width="1000" height="1000">
+		 	El navegador no admite WEBGL
+			</canvas>
+		 <script src="contexto_david_mandelbrot.js"> 	</script>
+	</body>
+</html>

@@ -26,15 +26,14 @@
 			out float zPos; // distancia hacia delante de la cámara
 
 			void main() {
-				// M -> mundo, V -> cámara
-				vec4 posWorld = uModelMatrix * vec4(aVertexPosition, 1.0);
-				vec4 posView  = uViewMatrix * posWorld;         // espacio de cámara
 
-				// Proyección correcta: P * V * M * pos
+				vec4 posWorld = uModelMatrix * vec4(aVertexPosition, 1.0);
+				vec4 posView  = uViewMatrix * posWorld; 
+
 				gl_Position = uProjectMatrix * posView;
 
 				colorOut = vec4(uColor, 1.0);
-				zPos = -posView.z; // la cámara mira a -Z, distancia positiva hacia delante
+				zPos = -posView.z; 
 			}
 		</script>
 		<script id="shader-fs" type="x-shader/x-fragment">#version 300 es

@@ -21,7 +21,7 @@ var camState = {
     fov: 60.0,
     znear: 0.1,
     zfar: 10.0,
-    pos: [2,2,4],
+    pos: [0,0.1,-2],
     look: [0,0,0]
   };
 
@@ -33,6 +33,16 @@ var model = {
 	],
 
 	"colores" : [
+    [1.0, 0.2, 0.2],
+    [1.0, 0.2, 0.2],  
+    [0.2, 1.0, 0.4],
+	[0.2, 1.0, 0.4],  
+    [0.2, 0.4, 1.0],
+	[0.2, 0.4, 1.0],  
+    [1.0, 0.8, 0.2],
+	[1.0, 0.8, 0.2],  
+	[0.3, 0.9, 0.9],
+	[0.3, 0.9, 0.9],
 	],
     // indices para gl.LINES
     "indices_lines" : [
@@ -42,16 +52,16 @@ var model = {
 	],
 	"indices_lados" : [
 	],
-	"Matrix" : [
-		mat4.translate(mat4.create(), [0.5, 0.3, 1]),
-		mat4.translate(mat4.create(), [-0.5, 0.3, 1]),
-		mat4.translate(mat4.create(), [0.5, 0.3, 2]),
-		mat4.translate(mat4.create(), [-0.5, 0.3, 2]),
-		mat4.translate(mat4.create(), [0.5, 0.3, 3]),
-		mat4.translate(mat4.create(), [-0.5, 0.3, 3]),
-		mat4.translate(mat4.create(), [0.5, 0.3, 4]),
-		mat4.translate(mat4.create(), [-0.5, 0.3, 4]),
-	]
+	"translateXYZ" : [
+		[0.5, 0.3, 0], 
+		[-0.5, 0.3, 0], 
+		[0.5, 0.3, 1], 
+		[-0.5, 0.3, 1], 
+		[0.5, 0.3, 2], 
+		[-0.5, 0.3, 2], 
+		[0.5, 0.3, 3], 
+		[-0.5, 0.3, 3], 
+	],
 }
 
 var angle = 0;
@@ -160,22 +170,10 @@ function detectMouse(){
 
 function initBuffers(){
   //Buffer Vertices
+  console.log("initBuffers, model es:", model);
   model.idBufferVertices = gl.createBuffer();
   gl.bindBuffer (gl.ARRAY_BUFFER, model.idBufferVertices);
   gl.bufferData (gl.ARRAY_BUFFER, new Float32Array(model.vertices), gl.DYNAMIC_DRAW);
-  
-  //Buffer de Indices a vértices
-  model.idBufferIndicesBases = gl.createBuffer();
-  gl.bindBuffer (gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesBases);
-  gl.bufferData (gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.indices_bases), gl.DYNAMIC_DRAW);
-
-  model.idBufferIndicesLados = gl.createBuffer();
-  gl.bindBuffer (gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesLados);
-  gl.bufferData (gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.indices_lados), gl.DYNAMIC_DRAW);
-
-  model.idBufferIndicesLineas = gl.createBuffer();
-  gl.bindBuffer (gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesLineas);
-  gl.bufferData (gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.indices_lines), gl.DYNAMIC_DRAW);
   
 }
 
@@ -188,32 +186,8 @@ function draw(){
 	gl.enable(gl.DEPTH_TEST);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	gl.useProgram(glProgram);
-	gl.colorTriangulo = gl.getUniformLocation(glProgram,"uColor");
-
-
-
-
-//	var radian = Math.PI * angle / 180.0; // Convert to radians
-//
-//    //Creo una matriz con GLMatrix3
-//    
-//
-//    mat4.fromRotation(model.Matrix,radian,[0.5,1,0.5]);
-//
-//
-//
-//    //Localiza la variable en el programa
-
-
 
 	
-	
-	glProgram.uMatrix = gl.getUniformLocation(glProgram, "uModelMatrix");
-	
-	gl.uniformMatrix4fv(glProgram.uMatrix, false, model.Matrix);
-
-	////
-
 	// view matrix
 
 	mat4.lookAt(ViewMatrix, camState.pos, camState.look, [0,1,0]);
@@ -225,7 +199,6 @@ function draw(){
 	const fovY = degToRad(Number(camState.fov));
 	mat4.perspective(ProjectionMatrix, fovY, canvas.width/canvas.height, camState.znear, camState.zfar);
 
-	//los multiplicamos y lo pasamos
 	glProgram.uMatrix = gl.getUniformLocation(glProgram, "uProjectMatrix");
 	gl.uniformMatrix4fv(glProgram.uMatrix, false, ProjectionMatrix);
 
@@ -238,48 +211,27 @@ function draw(){
 	gl.uniform1f(glProgram.uFloat, Number(camState.zfar));
 	
 	/**
-	* POSICION
+	* POSICION (y modelMatrix)
 	*/
-
-	glProgram.vertexPositionAttribute= gl.getAttribLocation(glProgram, "aVertexPosition");
-
-	//Habilitamos el atributo: queremos proporcionar los datos de la posicion desde un buffer
-	gl.enableVertexAttribArray(glProgram.vertexPositionAttribute);
-
-	gl.bindBuffer(gl.ARRAY_BUFFER, model.idBufferVertices);
-  	gl.vertexAttribPointer(glProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
-	gl.drawArrays(gl.POINTS, 0, model.vertices.length/3);
-
-	/**
-	 * COLOR
-	 */
-
-//	glProgram.vertexColorAttribute = gl.getAttribLocation(glProgram, "aVertexColor");
-//	gl.enableVertexAttribArray(glProgram.vertexColorAttribute);
-//
-//	gl.bindBuffer(gl.ARRAY_BUFFER, model.idBufferColores);
-//	gl.vertexAttribPointer(glProgram.vertexColorAttribute, 3, gl.FLOAT, false, 0, 0);
-
-	//Para bases
-	for(let i=0; i<2; i++){
+	for(let i=0; i<8; i++){
+		glProgram.colorTriangulo = gl.getUniformLocation(glProgram,"uColor");
+		gl.uniform3f(glProgram.colorTriangulo, model.colores[i][0],model.colores[i][1],model.colores[i][2]);
 		
-		gl.uniform3f(gl.colorTriangulo, model.colores[3*i], model.colores[3*i+1], model.colores[3*i+2]);
-		
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesBases);
-		gl.drawElements (gl.TRIANGLE_FAN, 5, gl.UNSIGNED_SHORT, i*2*5);
+		tempMatrix = mat4.create();
+		mat4.translate(tempMatrix, tempMatrix, model.translateXYZ[i])
+		glProgram.uMatrix=gl.getUniformLocation(glProgram,"uModelMatrix");
+		gl.uniformMatrix4fv(glProgram.uMatrix, false, tempMatrix);
+
+		glProgram.vertexPositionAttribute= gl.getAttribLocation(glProgram, "aVertexPosition");
+		//Habilitamos el atributo: queremos proporcionar los datos de la posicion desde un buffer
+		gl.enableVertexAttribArray(glProgram.vertexPositionAttribute);
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, model.idBufferVertices);
+		gl.vertexAttribPointer(glProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+		gl.drawArrays(gl.TRIANGLES, 0, model.vertices.length/3);
 	}
 
-	for(let i=0; i<5; i++){
-		
-		gl.uniform3f(gl.colorTriangulo, model.colores[6+3*i], model.colores[6+3*i+1], model.colores[6+3*i+2]);
-		
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesLados);
-		gl.drawElements (gl.TRIANGLE_FAN, 4, gl.UNSIGNED_SHORT, i*2*4);
-	}
-//
-	gl.uniform3f(gl.colorTriangulo, 0.0, 0.0, 0.0);
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.idBufferIndicesLineas);
-  	gl.drawElements (gl.LINES, model.indices_lines.length, gl.UNSIGNED_SHORT, 0);
+
 }
 /** *************************************************
  ==> Identifica el canvas y su contexto de webgl2
